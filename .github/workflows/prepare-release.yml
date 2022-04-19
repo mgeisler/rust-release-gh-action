@@ -190,10 +190,18 @@ jobs:
                          f'html_root_url = "https://docs.rs/{NAME}/{NEW_VERSION}"', line))
         shell: python3 {0} src/lib.rs
 
-      - name: Update crate version to ${{ needs.setup.outputs.new-version }}
-        uses: thomaseizinger/set-crate-version@1.0.0
-        with:
-          version: ${{ needs.setup.outputs.new-version }}
+      - name: Update crate version
+        run: |
+          import fileinput, re, sys
+
+          OLD_VERSION = '${{ needs.setup.outputs.old-version }}'
+          NEW_VERSION = '${{ needs.setup.outputs.new-version }}'
+
+          for line in fileinput.input(inplace=True):
+              sys.stdout.write(
+                  re.sub(f'version = "{OLD_VERSION}"',
+                         f'version = "{NEW_VERSION}"', line))
+        shell: python3 {0} Cargo.toml
 
       - name: Build and test
         run: |
