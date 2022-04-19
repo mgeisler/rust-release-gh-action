@@ -3,11 +3,6 @@ name: Prepare Release PR
 on:
   workflow_call:
     inputs:
-      dependency-graph-directory:
-        description: "If not-empty, generate a dependency graph and store it in this directory"
-        type: string
-        required: false
-        default: ""
       name:
         description: "Name to use for automated commits"
         type: string
@@ -16,6 +11,21 @@ on:
         description: "Email address to use for automated commits"
         type: string
         required: true
+      changelog-file:
+        description: "Filename of the changelog file"
+        type: string
+        required: true
+        default: "CHANGELOG.md"
+      changelog-heading-level:
+        description: "Markdown heading level used in the changelog"
+        type: string
+        required: true
+        default: "##"
+      dependency-graph-directory:
+        description: "If not-empty, generate a dependency graph and store it in this directory"
+        type: string
+        required: false
+        default: ""
 
 jobs:
   setup:
@@ -108,6 +118,8 @@ jobs:
             var fs = require('fs')
             const old_version = '${{ needs.setup.outputs.old-version }}'
             const new_version = '${{ needs.setup.outputs.new-version }}'
+            const changelog_file = '${{ inputs.changelog-file }}'
+            const heading_level = '${{ inputs.changelog-heading-level }}'
 
             let cutoff = '1970-01-01'
             const releases = await github.repos.listReleases(context.repo)
@@ -133,15 +145,17 @@ jobs:
             ).join('\n')
             core.exportVariable('CHANGELOG', changelog)
 
-            var content = fs.readFileSync('CHANGELOG.md', 'utf8')
+            var content = fs.readFileSync(changelog_file, 'utf8')
             const today = new Date().toISOString().split('T')[0]
-            const heading = `## Version ${new_version} (${today})\n`
-            if (content.match('## Unreleased')) {
-              content = content.replace('## Unreleased', `${heading}\n${changelog}`)
+            const heading = `${heading_level} Version ${new_version} (${today})\n`
+            if (content.match(`${heading_level} Unreleased`)) {
+              content = content.replace(`${heading_level} Unreleased`,
+                                        `${heading}\n${changelog}`)
             } else {
-              content = content.replace('## Version', `${heading}\n${changelog}\n\n## Version`)
+              content = content.replace(`${heading_level} Version`,
+                                        `${heading}\n${changelog}\n\n${heading_level} Version`)
             }
-            fs.writeFileSync('CHANGELOG.md', content)
+            fs.writeFileSync(changelog_file, content)
 
       - name: Commit changelog
         run: |
