@@ -21,7 +21,7 @@ on:
         type: string
         required: true
         default: "##"
-      dependency-graph-directory:
+      dependency-graph:
         description: "If not-empty, generate a dependency graph and store it in this directory"
         type: string
         required: false
