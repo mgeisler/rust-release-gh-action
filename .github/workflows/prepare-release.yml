@@ -146,7 +146,6 @@ jobs:
             core.exportVariable('CHANGELOG', changelog)
 
             var content = fs.readFileSync(changelog_file, 'utf8')
-            core.info(`Read ${content.length} bytes from ${changelog_file}`)
             const today = new Date().toISOString().split('T')[0]
             const heading = `${heading_level} Version ${new_version} (${today})\n`
             if (content.match(`${heading_level} Unreleased`)) {
@@ -157,7 +156,11 @@ jobs:
                                         `${heading}\n${changelog}\n\n${heading_level} Version`)
             }
             fs.writeFileSync(changelog_file, content)
-            core.info(`Wrote ${content.length} bytes to ${changelog_file}`)
+            core.info(`Wrote ${changelog_file}`)
+
+      - name: Show updated changelog
+        run: |
+          git diff
 
       - name: Commit changelog
         run: |
@@ -172,6 +175,8 @@ jobs:
           MAJOR_MINOR = '.'.join(NEW_VERSION.split('.')[:2])
 
           for line in fileinput.input(inplace=True):
+              line = re.sub(f'https://docs.rs/{NAME}/[^"]+/',
+                            f'https://docs.rs/{NAME}/{MAJOR_MINOR}/', line)
               line = re.sub(f'{NAME} = "[^"]+"',
                             f'{NAME} = "{MAJOR_MINOR}"', line)
               line = re.sub(f'{NAME} = {{ version = "[^"]+"',
@@ -205,6 +210,10 @@ jobs:
                   re.sub(f'version = "{OLD_VERSION}"',
                          f'version = "{NEW_VERSION}"', line))
         shell: python3 {0} Cargo.toml
+
+      - name: Show updated versions
+        run: |
+          git diff
 
       - name: Build and test
         run: |
