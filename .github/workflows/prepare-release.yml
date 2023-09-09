@@ -146,6 +146,7 @@ jobs:
             core.exportVariable('CHANGELOG', changelog)
 
             var content = fs.readFileSync(changelog_file, 'utf8')
+            core.info(`Read ${content.length} bytes from ${changelog_file}`)
             const today = new Date().toISOString().split('T')[0]
             const heading = `${heading_level} Version ${new_version} (${today})\n`
             if (content.match(`${heading_level} Unreleased`)) {
@@ -156,6 +157,7 @@ jobs:
                                         `${heading}\n${changelog}\n\n${heading_level} Version`)
             }
             fs.writeFileSync(changelog_file, content)
+            core.info(`Wrote ${content.length} bytes to ${changelog_file}`)
 
       - name: Commit changelog
         run: |
