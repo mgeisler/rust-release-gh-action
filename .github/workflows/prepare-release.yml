@@ -206,7 +206,7 @@ jobs:
 
       - name: Build and test
         run: |
-            cargo test
+          cargo test
 
       - name: Commit version bump
         run: |
