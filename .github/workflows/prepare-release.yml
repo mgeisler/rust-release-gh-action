@@ -182,11 +182,12 @@ jobs:
           import fileinput, re, sys
 
           NAME = '${{ needs.setup.outputs.name }}'
+          OLD_VERSION = '${{ needs.setup.outputs.old-version }}'
           NEW_VERSION = '${{ needs.setup.outputs.new-version }}'
 
           for line in fileinput.input(inplace=True):
               sys.stdout.write(
-                  re.sub(f'html_root_url = "https://docs.rs/{NAME}/[^"]+"',
+                  re.sub(f'html_root_url = "https://docs.rs/{NAME}/{OLD_VERSION}"',
                          f'html_root_url = "https://docs.rs/{NAME}/{NEW_VERSION}"', line))
         shell: python3 {0} src/lib.rs
 
